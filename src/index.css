@@ -1,0 +1,235 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Scientific Lab Theme - Deep Blues & Teals */
+    --background: 210 40% 98%;
+    --foreground: 220 25% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 25% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 25% 10%;
+
+    /* Primary: Deep Scientific Blue */
+    --primary: 217 91% 45%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary: Soft Lab Gray-Blue */
+    --secondary: 210 25% 93%;
+    --secondary-foreground: 220 25% 20%;
+
+    /* Muted: Subtle backgrounds */
+    --muted: 210 20% 96%;
+    --muted-foreground: 220 15% 45%;
+
+    /* Accent: Teal/Cyan for science feel */
+    --accent: 174 72% 40%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Success: Green for positive indicators */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+
+    /* Warning: Amber for alerts */
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    /* Destructive: Red for errors */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* XP/Gamification Gold */
+    --gold: 45 93% 47%;
+    --gold-foreground: 0 0% 100%;
+
+    /* Badge Colors */
+    --badge-bronze: 30 60% 50%;
+    --badge-silver: 210 10% 65%;
+    --badge-gold: 45 93% 47%;
+    --badge-platinum: 200 20% 80%;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 217 91% 45%;
+
+    --radius: 0.75rem;
+
+    /* Chemistry Colors for Experiments */
+    --acid: 0 85% 60%;
+    --base: 217 91% 60%;
+    --neutral: 142 60% 50%;
+    --indicator-acid: 350 85% 55%;
+    --indicator-base: 280 70% 55%;
+    --indicator-neutral: 45 90% 60%;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(217, 91%, 45%) 0%, hsl(217, 91%, 35%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(174, 72%, 40%) 0%, hsl(174, 72%, 30%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(217, 91%, 45%) 0%, hsl(174, 72%, 40%) 100%);
+    --gradient-gold: linear-gradient(135deg, hsl(45, 93%, 47%) 0%, hsl(38, 92%, 40%) 100%);
+    --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 hsl(217 91% 45% / 0.05);
+    --shadow-md: 0 4px 6px -1px hsl(217 91% 45% / 0.1), 0 2px 4px -2px hsl(217 91% 45% / 0.1);
+    --shadow-lg: 0 10px 15px -3px hsl(217 91% 45% / 0.1), 0 4px 6px -4px hsl(217 91% 45% / 0.1);
+    --shadow-xl: 0 20px 25px -5px hsl(217 91% 45% / 0.1), 0 8px 10px -6px hsl(217 91% 45% / 0.1);
+    --shadow-glow: 0 0 40px hsl(217 91% 45% / 0.3);
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 220 25% 8%;
+    --foreground: 210 40% 98%;
+
+    --card: 220 25% 12%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 220 25% 12%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 217 91% 55%;
+    --primary-foreground: 220 25% 8%;
+
+    --secondary: 220 20% 18%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 220 20% 18%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 174 72% 50%;
+    --accent-foreground: 220 25% 8%;
+
+    --success: 142 76% 46%;
+    --success-foreground: 220 25% 8%;
+
+    --destructive: 0 72% 50%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 220 20% 20%;
+    --input: 220 20% 20%;
+    --ring: 217 91% 55%;
+
+    --sidebar-background: 220 25% 10%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 217 91% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 20% 15%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 220 20% 20%;
+    --sidebar-ring: 217 91% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply bg-card/80 backdrop-blur-xl border border-border/50;
+  }
+
+  .glass-strong {
+    @apply bg-card/95 backdrop-blur-2xl border border-border/50;
+  }
+
+  .gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent;
+  }
+
+  .gradient-border {
+    @apply relative;
+    background: linear-gradient(var(--background), var(--background)) padding-box,
+                var(--gradient-hero) border-box;
+    border: 2px solid transparent;
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-pulse-slow {
+    animation: pulse 3s ease-in-out infinite;
+  }
+
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+
+  .lab-shadow {
+    box-shadow: var(--shadow-lg);
+  }
+
+  .lab-glow {
+    box-shadow: var(--shadow-glow);
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes glow {
+  from {
+    box-shadow: 0 0 20px hsl(217 91% 45% / 0.2);
+  }
+  to {
+    box-shadow: 0 0 30px hsl(217 91% 45% / 0.4);
+  }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-muted rounded-full;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-primary/30 rounded-full hover:bg-primary/50 transition-colors;
+}
+
+/* Selection styling */
+::selection {
+  @apply bg-primary/20 text-foreground;
+}
