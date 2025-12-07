@@ -161,8 +161,8 @@ export default function Experiments() {
                       className="group animate-fade-in"
                       style={{ animationDelay: `${0.05 * (index + 1)}s` }}
                     >
-                      <CardHeader>
-                        <div className="flex items-start justify-between mb-2">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-start justify-between mb-3">
                           <div className={`h-12 w-12 rounded-xl bg-gradient-to-br ${getSubjectColor(experiment.subject)} flex items-center justify-center text-white shadow-md group-hover:shadow-lg transition-shadow`}>
                             {getSubjectIcon(experiment.subject)}
                           </div>
@@ -170,14 +170,14 @@ export default function Experiments() {
                             {experiment.difficulty}
                           </Badge>
                         </div>
-                        <CardTitle className="group-hover:text-primary transition-colors">
+                        <CardTitle className="group-hover:text-primary transition-colors mb-2">
                           {experiment.name}
                         </CardTitle>
-                        <CardDescription className="line-clamp-2">
+                        <CardDescription className="line-clamp-2 min-h-[2.5rem]">
                           {experiment.description}
                         </CardDescription>
                       </CardHeader>
-                      <CardContent className="space-y-4">
+                      <CardContent className="pt-0 space-y-4">
                         <div className="flex items-center justify-between text-sm">
                           <div className="flex items-center gap-1.5 text-muted-foreground">
                             <Clock className="h-4 w-4" />

@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import VerifyEmail from "./pages/VerifyEmail";
 import Dashboard from "./pages/Dashboard";
 import Experiments from "./pages/Experiments";
 import TitrationExperiment from "./pages/TitrationExperiment";
@@ -33,6 +34,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/verify-email" element={<VerifyEmail />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/experiments" element={<Experiments />} />
               <Route path="/experiment/:id" element={<TitrationExperiment />} />

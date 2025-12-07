@@ -1,6 +1,6 @@
 -- ============================================================================
 -- Osmosis and Plasmolysis Experiment Migration
--- This file contains the osmosis_plasmolysis_runs table and experiment entry
+-- This file contains the osmosis_plasmolysis_runs table, experiment entry, and badges
 -- ============================================================================
 
 -- Create osmosis_plasmolysis_runs table for experiment results
@@ -50,9 +50,9 @@ INSERT INTO public.experiments (name, description, subject, difficulty, xp_rewar
             "Observe how the tonicity label updates automatically (Hypotonic/Isotonic/Hypertonic)",
             "Watch the plant cell diagram change based on the concentration difference",
             "Notice the water movement arrows (green = into cell, red = out of cell)",
-            "Click 'Start Simulation' to animate the cell transition over 4 seconds",
+            "Click ''Start Simulation'' to animate the cell transition over 4 seconds",
             "Read the net water movement and cell state readouts below the diagram",
-            "Click 'Submit Observation' when finished exploring"
+            "Click ''Submit Observation'' when finished exploring"
         ],
         "objectives": [
             "Understand osmosis and how water moves across semi-permeable membranes",
@@ -67,17 +67,17 @@ ON CONFLICT DO NOTHING;
 -- Insert badges for Osmosis and Plasmolysis experiment
 INSERT INTO public.badges (name, description, icon, tier, xp_requirement, criteria) VALUES
     -- Bronze tier badges
-    ('Osmosis Beginner', 'Complete the Osmosis and Plasmolysis Laboratory experiment', '🔬', 'bronze', 0, '{"experiment_type": "osmosis", "completed": true}'),
+    ('Osmosis Beginner', 'Complete the Osmosis and Plasmolysis Laboratory experiment once', '🔬', 'bronze', 0, '{"experiment_type": "osmosis", "completed": true}'),
     
     -- Silver tier badges
-    ('Osmosis Master', 'Achieve 90%+ accuracy in the Osmosis and Plasmolysis experiment', '💧', 'silver', 500, '{"experiment_type": "osmosis", "accuracy_threshold": 90}'),
-    ('Biology Explorer', 'Complete 5 Biology experiments', '🌿', 'silver', 1000, '{"subject": "biology", "experiments_completed": 5}'),
+    ('Osmosis Master', 'Achieve 90%+ accuracy in any Osmosis and Plasmolysis experiment attempt', '💧', 'silver', 500, '{"experiment_type": "osmosis", "accuracy_threshold": 90}'),
+    ('Biology Explorer', 'Complete 5 Biology experiments (any accuracy)', '🌿', 'silver', 1000, '{"subject": "biology", "experiments_completed": 5}'),
     
     -- Gold tier badges
-    ('Osmosis Expert', 'Complete the Osmosis and Plasmolysis experiment 3 times with 85%+ accuracy', '🧪', 'gold', 2000, '{"experiment_type": "osmosis", "experiments_completed": 3, "min_accuracy": 85}'),
-    ('Biology Scholar', 'Complete 10 Biology experiments', '🌱', 'gold', 5000, '{"subject": "biology", "experiments_completed": 10}'),
+    ('Osmosis Expert', 'Complete the Osmosis and Plasmolysis experiment 3 times, each with 85%+ accuracy', '🧪', 'gold', 2000, '{"experiment_type": "osmosis", "experiments_completed": 3, "min_accuracy": 85}'),
+    ('Biology Scholar', 'Complete 10 Biology experiments (any accuracy)', '🌱', 'gold', 5000, '{"subject": "biology", "experiments_completed": 10}'),
     
     -- Platinum tier badge
-    ('Biology Wizard', 'Complete all Biology experiments with 90%+ accuracy', '🧙', 'platinum', 15000, '{"subject": "biology", "min_accuracy": 90}')
-ON CONFLICT DO NOTHING;
+    ('Biology Wizard', 'Complete all Biology experiments with 90%+ accuracy on each', '🧙', 'platinum', 15000, '{"subject": "biology", "min_accuracy": 90}')
+ON CONFLICT (name) DO UPDATE SET description = EXCLUDED.description;
 

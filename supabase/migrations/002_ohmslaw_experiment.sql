@@ -1,6 +1,6 @@
 -- ============================================================================
--- Ohm's Law Features Migration
--- This file contains the Ohm's Law experiment table, experiment entry, and related badges
+-- Ohm's Law Experiment Migration
+-- This file contains the Ohm's Law experiment table, experiment entry, and badges
 -- ============================================================================
 
 -- Create ohmslaw_runs table for Ohm's Law experiment results
@@ -29,7 +29,7 @@ CREATE POLICY "Teachers and admins can view all Ohm's Law runs"
     ON public.ohmslaw_runs FOR SELECT
     USING (public.get_user_role(auth.uid()) IN ('teacher', 'admin'));
 
--- Create index for faster queries
+-- Create indexes for faster queries
 CREATE INDEX IF NOT EXISTS idx_ohmslaw_runs_user_id ON public.ohmslaw_runs(user_id);
 CREATE INDEX IF NOT EXISTS idx_ohmslaw_runs_created_at ON public.ohmslaw_runs(created_at DESC);
 
@@ -62,16 +62,17 @@ ON CONFLICT DO NOTHING;
 -- Insert badges for Ohm's Law experiment
 INSERT INTO public.badges (name, description, icon, tier, xp_requirement, criteria) VALUES
     -- Bronze tier badges
-    ('Ohm''s Law Beginner', 'Complete the Ohm''s Law Laboratory experiment', '⚡', 'bronze', 0, '{"experiment_type": "ohms law", "completed": true}'),
+    ('Ohm''s Law Beginner', 'Complete the Ohm''s Law Laboratory experiment once', '⚡', 'bronze', 0, '{"experiment_type": "ohms law", "completed": true}'),
     
     -- Silver tier badges
-    ('Ohm''s Law Master', 'Achieve 90%+ accuracy in the Ohm''s Law experiment', '🔋', 'silver', 500, '{"experiment_type": "ohms law", "accuracy_threshold": 90}'),
-    ('Physics Explorer', 'Complete 5 Physics experiments', '🌌', 'silver', 1000, '{"subject": "physics", "experiments_completed": 5}'),
+    ('Ohm''s Law Master', 'Achieve 90%+ accuracy in any Ohm''s Law experiment attempt', '🔋', 'silver', 500, '{"experiment_type": "ohms law", "accuracy_threshold": 90}'),
+    ('Physics Explorer', 'Complete 5 Physics experiments (any accuracy)', '🌌', 'silver', 1000, '{"subject": "physics", "experiments_completed": 5}'),
     
     -- Gold tier badges
-    ('Ohm''s Law Expert', 'Complete the Ohm''s Law experiment 3 times with 85%+ accuracy', '⚙️', 'gold', 2000, '{"experiment_type": "ohms law", "experiments_completed": 3, "min_accuracy": 85}'),
-    ('Physics Scholar', 'Complete 10 Physics experiments', '🔬', 'gold', 5000, '{"subject": "physics", "experiments_completed": 10}'),
+    ('Ohm''s Law Expert', 'Complete the Ohm''s Law experiment 3 times, each with 85%+ accuracy', '⚙️', 'gold', 2000, '{"experiment_type": "ohms law", "experiments_completed": 3, "min_accuracy": 85}'),
+    ('Physics Scholar', 'Complete 10 Physics experiments (any accuracy)', '🔬', 'gold', 5000, '{"subject": "physics", "experiments_completed": 10}'),
     
     -- Platinum tier badge
-    ('Physics Wizard', 'Complete all Physics experiments with 90%+ accuracy', '🧙', 'platinum', 15000, '{"subject": "physics", "min_accuracy": 90}');
+    ('Physics Wizard', 'Complete all Physics experiments with 90%+ accuracy on each', '🧙', 'platinum', 15000, '{"subject": "physics", "min_accuracy": 90}')
+ON CONFLICT (name) DO UPDATE SET description = EXCLUDED.description;
 

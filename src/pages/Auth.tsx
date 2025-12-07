@@ -60,8 +60,8 @@ export default function Auth() {
             setError(error.message);
           }
         } else {
-          toast.success('Account created! Welcome to Virtual Lab!');
-          navigate('/dashboard');
+          toast.success('Account created! Please verify your email.');
+          navigate('/verify-email');
         }
       } else {
         const validation = loginSchema.safeParse({ email, password });

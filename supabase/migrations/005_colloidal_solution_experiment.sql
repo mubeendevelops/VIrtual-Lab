@@ -50,7 +50,6 @@ INSERT INTO public.experiments (name, description, subject, difficulty, xp_rewar
             "Observe how the colloid status changes based on concentration",
             "Click ''Start Experiment'' to begin the observation",
             "Watch the Tyndall effect visualization in the beaker",
-            "Click ''Observe Tyndall Effect'' to highlight the light scattering",
             "Note the stability bar for unstable colloids",
             "Click ''Save Observation'' when finished exploring"
         ],
@@ -70,9 +69,9 @@ INSERT INTO public.badges (name, description, icon, tier, xp_requirement, criter
     ('Colloid Beginner', 'Complete the Preparation of Colloidal Solution experiment once', '🧪', 'bronze', 0, '{"experiment_type": "colloid", "completed": true}'),
     
     -- Silver tier badges
-    ('Colloid Master', 'Achieve 90%+ accuracy in the Colloidal Solution experiment', '💎', 'silver', 500, '{"experiment_type": "colloid", "accuracy_threshold": 90}'),
+    ('Colloid Master', 'Achieve 90%+ accuracy in any Colloidal Solution experiment attempt', '💎', 'silver', 500, '{"experiment_type": "colloid", "accuracy_threshold": 90}'),
     
     -- Gold tier badges
-    ('Colloid Expert', 'Complete the Colloidal Solution experiment 3 times with 85%+ accuracy', '⚗️', 'gold', 2000, '{"experiment_type": "colloid", "experiments_completed": 3, "min_accuracy": 85}')
+    ('Colloid Expert', 'Complete the Colloidal Solution experiment 3 times, each with 85%+ accuracy', '⚗️', 'gold', 2000, '{"experiment_type": "colloid", "experiments_completed": 3, "min_accuracy": 85}')
 ON CONFLICT (name) DO UPDATE SET description = EXCLUDED.description;
 

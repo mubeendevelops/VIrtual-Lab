@@ -255,7 +255,6 @@ CREATE TRIGGER on_auth_user_created
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
 -- Create function to update profile timestamp
--- Fix function search path for update_updated_at_column
 CREATE OR REPLACE FUNCTION public.update_updated_at_column()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -277,15 +276,19 @@ CREATE TRIGGER update_experiments_updated_at
     BEFORE UPDATE ON public.experiments
     FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
--- Insert default badges
+-- Insert default badges with accurate descriptions
 INSERT INTO public.badges (name, description, icon, tier, xp_requirement, criteria) VALUES
-    ('First Steps', 'Complete your first experiment', '🧪', 'bronze', 0, '{"experiments_completed": 1}'),
-    ('Titration Beginner', 'Complete the Acid-Base Titration experiment', '⚗️', 'bronze', 0, '{"experiment_type": "titration", "completed": true}'),
-    ('Accuracy Master', 'Achieve 95%+ accuracy in any experiment', '🎯', 'silver', 500, '{"accuracy_threshold": 95}'),
-    ('Lab Regular', 'Complete 10 experiments', '🔬', 'silver', 1000, '{"experiments_completed": 10}'),
-    ('Science Star', 'Earn 5000 XP points', '⭐', 'gold', 5000, '{"xp_threshold": 5000}'),
-    ('Lab Expert', 'Complete 50 experiments', '🏆', 'gold', 10000, '{"experiments_completed": 50}'),
-    ('Chemistry Wizard', 'Complete all chemistry experiments with 90%+ accuracy', '🧙', 'platinum', 25000, '{"subject": "chemistry", "min_accuracy": 90}');
+    -- General badges
+    ('First Steps', 'Complete your first experiment (any subject)', '🧪', 'bronze', 0, '{"experiments_completed": 1}'),
+    ('Accuracy Master', 'Achieve 95%+ accuracy in any single experiment attempt', '🎯', 'silver', 500, '{"accuracy_threshold": 95}'),
+    ('Lab Regular', 'Complete 10 experiments total (any subject, any accuracy)', '🔬', 'silver', 1000, '{"experiments_completed": 10}'),
+    ('Science Star', 'Earn 5000 total XP points', '⭐', 'gold', 5000, '{"xp_threshold": 5000}'),
+    ('Lab Expert', 'Complete 50 experiments total (any subject, any accuracy)', '🏆', 'gold', 10000, '{"experiments_completed": 50}'),
+    
+    -- Chemistry badges
+    ('Titration Beginner', 'Complete the Acid-Base Titration experiment once', '⚗️', 'bronze', 0, '{"experiment_type": "titration", "completed": true}'),
+    ('Chemistry Wizard', 'Complete all Chemistry experiments with 90%+ accuracy on each', '🧙', 'platinum', 25000, '{"subject": "chemistry", "min_accuracy": 90}')
+ON CONFLICT (name) DO UPDATE SET description = EXCLUDED.description;
 
 -- Insert default experiment (Acid-Base Titration)
 INSERT INTO public.experiments (name, description, subject, difficulty, xp_reward, duration_minutes, instructions) VALUES
@@ -304,5 +307,5 @@ INSERT INTO public.experiments (name, description, subject, difficulty, xp_rewar
             "Identify the equivalence point",
             "Calculate unknown concentration"
         ]
-    }');
-
+    }')
+ON CONFLICT DO NOTHING;

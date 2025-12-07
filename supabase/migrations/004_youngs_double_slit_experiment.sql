@@ -68,9 +68,9 @@ INSERT INTO public.badges (name, description, icon, tier, xp_requirement, criter
     ('Double Slit Beginner', 'Complete the Young''s Double Slit experiment once', '🌊', 'bronze', 0, '{"experiment_type": "youngs double slit", "completed": true}'),
     
     -- Silver tier badges
-    ('Double Slit Master', 'Achieve 90%+ accuracy in the Young''s Double Slit experiment', '💫', 'silver', 500, '{"experiment_type": "youngs double slit", "accuracy_threshold": 90}'),
+    ('Double Slit Master', 'Achieve 90%+ accuracy in any Young''s Double Slit experiment attempt', '💫', 'silver', 500, '{"experiment_type": "youngs double slit", "accuracy_threshold": 90}'),
     
     -- Gold tier badges
-    ('Double Slit Expert', 'Complete the Young''s Double Slit experiment 3 times with 85%+ accuracy', '⚡', 'gold', 2000, '{"experiment_type": "youngs double slit", "experiments_completed": 3, "min_accuracy": 85}')
+    ('Double Slit Expert', 'Complete the Young''s Double Slit experiment 3 times, each with 85%+ accuracy', '⚡', 'gold', 2000, '{"experiment_type": "youngs double slit", "experiments_completed": 3, "min_accuracy": 85}')
 ON CONFLICT (name) DO UPDATE SET description = EXCLUDED.description;
 

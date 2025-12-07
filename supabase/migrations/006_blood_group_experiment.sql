@@ -69,9 +69,9 @@ INSERT INTO public.badges (name, description, icon, tier, xp_requirement, criter
     ('Blood Group Beginner', 'Complete the Blood Group Determination experiment once', '🩸', 'bronze', 0, '{"experiment_type": "blood group", "completed": true}'),
     
     -- Silver tier badges
-    ('Blood Group Master', 'Achieve 90%+ accuracy in the Blood Group Determination experiment', '💉', 'silver', 500, '{"experiment_type": "blood group", "accuracy_threshold": 90}'),
+    ('Blood Group Master', 'Achieve 90%+ accuracy in any Blood Group Determination experiment attempt', '💉', 'silver', 500, '{"experiment_type": "blood group", "accuracy_threshold": 90}'),
     
     -- Gold tier badges
-    ('Blood Group Expert', 'Complete the Blood Group Determination experiment 3 times with 85%+ accuracy', '🧬', 'gold', 2000, '{"experiment_type": "blood group", "experiments_completed": 3, "min_accuracy": 85}')
+    ('Blood Group Expert', 'Complete the Blood Group Determination experiment 3 times, each with 85%+ accuracy', '🧬', 'gold', 2000, '{"experiment_type": "blood group", "experiments_completed": 3, "min_accuracy": 85}')
 ON CONFLICT (name) DO UPDATE SET description = EXCLUDED.description;
 
