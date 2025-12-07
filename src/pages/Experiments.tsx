@@ -193,6 +193,12 @@ export default function Experiments() {
                           experiment.name?.toLowerCase().includes("ohm's law") ||
                           experiment.subject?.toLowerCase() === 'physics'
                             ? `/experiment-ohmslaw/${experiment.id}`
+                            : experiment.name?.toLowerCase().includes('osmosis') ||
+                              experiment.name?.toLowerCase().includes('plasmolysis') ||
+                              (experiment.subject?.toLowerCase() === 'biology' && 
+                               (experiment.name?.toLowerCase().includes('osmosis') || 
+                                experiment.name?.toLowerCase().includes('plasmolysis')))
+                            ? `/experiment-osmosis/${experiment.id}`
                             : `/experiment/${experiment.id}`
                         }>
                           <Button variant="hero" className="w-full gap-2 group-hover:scale-[1.02] transition-transform">
