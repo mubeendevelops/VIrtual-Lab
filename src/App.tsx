@@ -14,6 +14,7 @@ import OhmsLawExperiment from "./pages/OhmsLawExperiment";
 import OsmosisPlasmolysisExperiment from "./pages/OsmosisPlasmolysisExperiment";
 import YoungsDoubleSlitExperiment from "./pages/YoungsDoubleSlitExperiment";
 import ColloidalSolutionLab from "./pages/ColloidalSolutionLab";
+import BloodGroupLab from "./pages/BloodGroupLab";
 import Leaderboard from "./pages/Leaderboard";
 import Profile from "./pages/Profile";
 import TeacherPanel from "./pages/TeacherPanel";
@@ -50,6 +51,10 @@ const App = () => (
               <Route
                 path="/experiment-colloid/:id"
                 element={<ColloidalSolutionLab />}
+              />
+              <Route
+                path="/experiment-bloodgroup/:id"
+                element={<BloodGroupLab />}
               />
               <Route path="/leaderboard" element={<Leaderboard />} />
               <Route path="/profile" element={<Profile />} />

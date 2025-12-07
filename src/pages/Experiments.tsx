@@ -207,6 +207,9 @@ export default function Experiments() {
                             : experiment.name?.toLowerCase().includes('colloid') ||
                               experiment.name?.toLowerCase().includes('colloidal')
                             ? `/experiment-colloid/${experiment.id}`
+                            : experiment.name?.toLowerCase().includes('blood group') ||
+                              experiment.name?.toLowerCase().includes('bloodgroup')
+                            ? `/experiment-bloodgroup/${experiment.id}`
                             : `/experiment/${experiment.id}`
                         }>
                           <Button variant="hero" className="w-full gap-2 group-hover:scale-[1.02] transition-transform">

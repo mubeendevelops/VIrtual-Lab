@@ -63,6 +63,19 @@ UPDATE public.badges
 SET description = 'Complete the Colloidal Solution experiment 3 times, each with 85%+ accuracy'
 WHERE name = 'Colloid Expert';
 
+-- Update Blood Group badges
+UPDATE public.badges 
+SET description = 'Complete the Blood Group Determination experiment once'
+WHERE name = 'Blood Group Beginner';
+
+UPDATE public.badges 
+SET description = 'Achieve 90%+ accuracy in any Blood Group Determination experiment attempt'
+WHERE name = 'Blood Group Master';
+
+UPDATE public.badges 
+SET description = 'Complete the Blood Group Determination experiment 3 times, each with 85%+ accuracy'
+WHERE name = 'Blood Group Expert';
+
 -- Update Biology badges
 UPDATE public.badges 
 SET description = 'Complete the Osmosis and Plasmolysis Laboratory experiment once'
