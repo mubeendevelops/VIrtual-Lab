@@ -50,6 +50,19 @@ UPDATE public.badges
 SET description = 'Complete the Young''s Double Slit experiment 3 times, each with 85%+ accuracy'
 WHERE name = 'Double Slit Expert';
 
+-- Update Colloidal Solution badges
+UPDATE public.badges 
+SET description = 'Complete the Preparation of Colloidal Solution experiment once'
+WHERE name = 'Colloid Beginner';
+
+UPDATE public.badges 
+SET description = 'Achieve 90%+ accuracy in any Colloidal Solution experiment attempt'
+WHERE name = 'Colloid Master';
+
+UPDATE public.badges 
+SET description = 'Complete the Colloidal Solution experiment 3 times, each with 85%+ accuracy'
+WHERE name = 'Colloid Expert';
+
 -- Update Biology badges
 UPDATE public.badges 
 SET description = 'Complete the Osmosis and Plasmolysis Laboratory experiment once'
