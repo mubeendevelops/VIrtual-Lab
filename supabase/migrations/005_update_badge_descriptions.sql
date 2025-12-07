@@ -37,6 +37,19 @@ UPDATE public.badges
 SET description = 'Complete all Physics experiments with 90%+ accuracy on each'
 WHERE name = 'Physics Wizard';
 
+-- Update Young's Double Slit badges
+UPDATE public.badges 
+SET description = 'Complete the Young''s Double Slit experiment once'
+WHERE name = 'Double Slit Beginner';
+
+UPDATE public.badges 
+SET description = 'Achieve 90%+ accuracy in any Young''s Double Slit experiment attempt'
+WHERE name = 'Double Slit Master';
+
+UPDATE public.badges 
+SET description = 'Complete the Young''s Double Slit experiment 3 times, each with 85%+ accuracy'
+WHERE name = 'Double Slit Expert';
+
 -- Update Biology badges
 UPDATE public.badges 
 SET description = 'Complete the Osmosis and Plasmolysis Laboratory experiment once'

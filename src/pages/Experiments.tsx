@@ -191,8 +191,13 @@ export default function Experiments() {
                         <Link to={
                           experiment.name?.toLowerCase().includes('ohm') || 
                           experiment.name?.toLowerCase().includes("ohm's law") ||
-                          experiment.subject?.toLowerCase() === 'physics'
+                          (experiment.subject?.toLowerCase() === 'physics' && 
+                           !experiment.name?.toLowerCase().includes('young') &&
+                           !experiment.name?.toLowerCase().includes('double slit'))
                             ? `/experiment-ohmslaw/${experiment.id}`
+                            : experiment.name?.toLowerCase().includes('young') ||
+                              experiment.name?.toLowerCase().includes('double slit')
+                            ? `/experiment-youngs-double-slit/${experiment.id}`
                             : experiment.name?.toLowerCase().includes('osmosis') ||
                               experiment.name?.toLowerCase().includes('plasmolysis') ||
                               (experiment.subject?.toLowerCase() === 'biology' && 

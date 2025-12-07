@@ -12,6 +12,7 @@ import Experiments from "./pages/Experiments";
 import TitrationExperiment from "./pages/TitrationExperiment";
 import OhmsLawExperiment from "./pages/OhmsLawExperiment";
 import OsmosisPlasmolysisExperiment from "./pages/OsmosisPlasmolysisExperiment";
+import YoungsDoubleSlitExperiment from "./pages/YoungsDoubleSlitExperiment";
 import Leaderboard from "./pages/Leaderboard";
 import Profile from "./pages/Profile";
 import TeacherPanel from "./pages/TeacherPanel";
@@ -40,6 +41,10 @@ const App = () => (
               <Route
                 path="/experiment-osmosis/:id"
                 element={<OsmosisPlasmolysisExperiment />}
+              />
+              <Route
+                path="/experiment-youngs-double-slit/:id"
+                element={<YoungsDoubleSlitExperiment />}
               />
               <Route path="/leaderboard" element={<Leaderboard />} />
               <Route path="/profile" element={<Profile />} />
