@@ -64,3 +64,20 @@ INSERT INTO public.experiments (name, description, subject, difficulty, xp_rewar
     }')
 ON CONFLICT DO NOTHING;
 
+-- Insert badges for Osmosis and Plasmolysis experiment
+INSERT INTO public.badges (name, description, icon, tier, xp_requirement, criteria) VALUES
+    -- Bronze tier badges
+    ('Osmosis Beginner', 'Complete the Osmosis and Plasmolysis Laboratory experiment', '🔬', 'bronze', 0, '{"experiment_type": "osmosis", "completed": true}'),
+    
+    -- Silver tier badges
+    ('Osmosis Master', 'Achieve 90%+ accuracy in the Osmosis and Plasmolysis experiment', '💧', 'silver', 500, '{"experiment_type": "osmosis", "accuracy_threshold": 90}'),
+    ('Biology Explorer', 'Complete 5 Biology experiments', '🌿', 'silver', 1000, '{"subject": "biology", "experiments_completed": 5}'),
+    
+    -- Gold tier badges
+    ('Osmosis Expert', 'Complete the Osmosis and Plasmolysis experiment 3 times with 85%+ accuracy', '🧪', 'gold', 2000, '{"experiment_type": "osmosis", "experiments_completed": 3, "min_accuracy": 85}'),
+    ('Biology Scholar', 'Complete 10 Biology experiments', '🌱', 'gold', 5000, '{"subject": "biology", "experiments_completed": 10}'),
+    
+    -- Platinum tier badge
+    ('Biology Wizard', 'Complete all Biology experiments with 90%+ accuracy', '🧙', 'platinum', 15000, '{"subject": "biology", "min_accuracy": 90}')
+ON CONFLICT DO NOTHING;
+

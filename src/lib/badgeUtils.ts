@@ -88,6 +88,17 @@ export async function checkAndAwardBadges(
     const chemistryRuns = completedRuns.filter(r => 
       (r.experiments as any)?.subject?.toLowerCase() === 'chemistry'
     );
+    const biologyRuns = completedRuns.filter(r => 
+      (r.experiments as any)?.subject?.toLowerCase() === 'biology'
+    );
+
+    // Helper function to normalize experiment names for matching
+    const normalizeExperimentName = (name: string): string => {
+      return name.toLowerCase()
+        .replace(/[''"]/g, '') // Remove apostrophes and quotes
+        .replace(/\s+/g, ' ')   // Normalize whitespace
+        .trim();
+    };
 
     // Check each badge
     for (const badge of allBadges as Badge[]) {
@@ -98,6 +109,17 @@ export async function checkAndAwardBadges(
 
       const criteria = badge.criteria as BadgeCriteria;
       let shouldAward = false;
+      
+      // Debug logging
+      if (completedExperiment) {
+        console.log(`[Badge Check] ${badge.name}:`, {
+          criteria,
+          experimentName: (completedExperiment.experiments as any)?.name,
+          experimentSubject: (completedExperiment.experiments as any)?.subject,
+          status: completedExperiment.status,
+          score: completedExperiment.score
+        });
+      }
 
       // Check experiments_completed criteria
       if (criteria.experiments_completed !== undefined) {
@@ -136,21 +158,19 @@ export async function checkAndAwardBadges(
         }
       }
 
-      // Helper function to normalize experiment names for matching
-      const normalizeExperimentName = (name: string): string => {
-        return name.toLowerCase()
-          .replace(/[''"]/g, '') // Remove apostrophes and quotes
-          .replace(/\s+/g, ' ')   // Normalize whitespace
-          .trim();
-      };
-
-      // Check experiment_type criteria (e.g., titration, ohms law)
+      // Check experiment_type criteria (e.g., titration, ohms law, osmosis)
       if (criteria.experiment_type && completedExperiment) {
         const expName = normalizeExperimentName((completedExperiment.experiments as any)?.name || '');
         const expTypeNormalized = normalizeExperimentName(criteria.experiment_type);
-        // Check if experiment name contains the type (handles "ohm's law", "ohms law", etc.)
+        // Check if experiment name contains the type (handles "ohm's law", "ohms law", "osmosis", etc.)
         if (expName.includes(expTypeNormalized) && completedExperiment.status === 'completed') {
-          shouldAward = true;
+          // For badges that only require completion (completed: true), award immediately
+          if (criteria.completed === true) {
+            shouldAward = true;
+          } else if (!criteria.accuracy_threshold && !criteria.experiments_completed) {
+            // If no other criteria specified, award for completion
+            shouldAward = true;
+          }
         }
       }
 
@@ -188,7 +208,7 @@ export async function checkAndAwardBadges(
         }
       }
 
-      // Check subject + min_accuracy criteria (e.g., Chemistry Wizard)
+      // Check subject + min_accuracy criteria (e.g., Chemistry Wizard, Biology Wizard)
       if (criteria.subject && criteria.min_accuracy !== undefined) {
         const subjectRuns = completedRuns.filter(r => 
           (r.experiments as any)?.subject?.toLowerCase() === criteria.subject?.toLowerCase()
@@ -197,7 +217,7 @@ export async function checkAndAwardBadges(
           (r.experiments as any)?.subject?.toLowerCase() === criteria.subject?.toLowerCase()
         );
         
-        // Check if all chemistry experiments are completed with required accuracy
+        // Check if all experiments for this subject are completed with required accuracy
         if (allSubjectRuns.length > 0 && 
             subjectRuns.length === allSubjectRuns.length &&
             subjectRuns.every(r => (r.score || 0) >= criteria.min_accuracy!)) {
@@ -207,6 +227,7 @@ export async function checkAndAwardBadges(
 
       // Award the badge if criteria is met
       if (shouldAward) {
+        console.log(`[Badge Award] Awarding badge: ${badge.name}`);
         const { error: awardError } = await supabase
           .from('user_badges')
           .insert({
@@ -222,8 +243,10 @@ export async function checkAndAwardBadges(
             duration: 5000,
           });
         } else {
-          console.error(`Error awarding badge ${badge.id}:`, awardError);
+          console.error(`[Badge Award] Error awarding badge ${badge.id}:`, awardError);
         }
+      } else if (completedExperiment) {
+        console.log(`[Badge Check] ${badge.name}: Criteria not met`);
       }
     }
   } catch (error) {

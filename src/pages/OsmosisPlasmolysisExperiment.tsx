@@ -348,8 +348,9 @@ export default function OsmosisPlasmolysisExperiment() {
     }
 
     // Update user XP
+    let newXP = profile?.xp_points || 0;
     if (profile) {
-      const newXP = profile.xp_points + xpEarned;
+      newXP = profile.xp_points + xpEarned;
       const newLevel = Math.floor(newXP / 500) + 1;
       const { error: profileError } = await updateProfile({
         xp_points: newXP,
@@ -375,7 +376,7 @@ export default function OsmosisPlasmolysisExperiment() {
         },
       };
 
-      await checkAndAwardBadges(user.id, profile?.xp_points || 0, completedRun);
+      await checkAndAwardBadges(user.id, newXP, completedRun);
     }
 
     logEvent("experiment_completed", {

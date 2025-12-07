@@ -255,6 +255,17 @@ export default function Profile() {
           progress = allPhysics.length > 0 
             ? Math.min(100, (physicsWithAccuracy.length / allPhysics.length) * 100)
             : 0;
+        } else if (criteria.subject === 'biology' && criteria.min_accuracy) {
+          const biologyRuns = completedRuns.filter(e => 
+            ((e.experiments as any)?.subject || '').toLowerCase() === 'biology'
+          );
+          const allBiology = allExperimentRuns.filter(e => 
+            ((e.experiments as any)?.subject || '').toLowerCase() === 'biology'
+          );
+          const biologyWithAccuracy = biologyRuns.filter(e => (e.score || 0) >= criteria.min_accuracy!);
+          progress = allBiology.length > 0 
+            ? Math.min(100, (biologyWithAccuracy.length / allBiology.length) * 100)
+            : 0;
         } else {
           progress = isEarned ? 100 : 0;
         }
@@ -551,13 +562,46 @@ export default function Profile() {
                         </h3>
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                           {badges.filter(b => !b.is_earned).map((badge) => {
-                            const progressText = badge.criteria.experiments_completed
-                              ? `${stats.completedExperiments}/${badge.criteria.experiments_completed} experiments`
-                              : badge.criteria.xp_threshold
-                              ? `${profile?.xp_points || 0}/${badge.criteria.xp_threshold} XP`
-                              : badge.criteria.accuracy_threshold
-                              ? `${stats.averageAccuracy}% / ${badge.criteria.accuracy_threshold}% accuracy`
-                              : 'In progress';
+                            // Calculate progress text based on badge criteria
+                            // Use allExperiments state to calculate subject-specific counts
+                            const completedRuns = allExperiments.filter(e => e.status === 'completed');
+                            
+                            let progressText = 'In progress';
+                            
+                            if (badge.criteria.experiments_completed) {
+                              if (badge.criteria.subject) {
+                                // Subject-specific badges (e.g., Physics Scholar, Biology Scholar)
+                                const subjectRuns = completedRuns.filter(e => 
+                                  ((e.experiments as any)?.subject || '').toLowerCase() === badge.criteria.subject?.toLowerCase()
+                                );
+                                const subjectName = badge.criteria.subject.charAt(0).toUpperCase() + badge.criteria.subject.slice(1);
+                                progressText = `${subjectRuns.length}/${badge.criteria.experiments_completed} ${subjectName} experiments`;
+                              } else if (badge.criteria.experiment_type) {
+                                // Experiment type-specific badges
+                                const normalizeExperimentName = (name: string): string => {
+                                  return name.toLowerCase()
+                                    .replace(/[''"]/g, '')
+                                    .replace(/\s+/g, ' ')
+                                    .trim();
+                                };
+                                const expTypeNormalized = normalizeExperimentName(badge.criteria.experiment_type);
+                                const typeRuns = completedRuns.filter(e => {
+                                  const expName = normalizeExperimentName((e.experiments as any)?.name || '');
+                                  return expName.includes(expTypeNormalized);
+                                });
+                                const count = badge.criteria.min_accuracy 
+                                  ? typeRuns.filter(e => (e.score || 0) >= badge.criteria.min_accuracy!).length
+                                  : typeRuns.length;
+                                progressText = `${count}/${badge.criteria.experiments_completed} experiments`;
+                              } else {
+                                // General experiment count badges
+                                progressText = `${stats.completedExperiments}/${badge.criteria.experiments_completed} experiments`;
+                              }
+                            } else if (badge.criteria.xp_threshold) {
+                              progressText = `${profile?.xp_points || 0}/${badge.criteria.xp_threshold} XP`;
+                            } else if (badge.criteria.accuracy_threshold) {
+                              progressText = `${stats.averageAccuracy}% / ${badge.criteria.accuracy_threshold}% accuracy`;
+                            }
 
                             return (
                               <div
