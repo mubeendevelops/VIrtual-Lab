@@ -1,24 +1,30 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Layout } from '@/components/layout/Layout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Slider } from '@/components/ui/slider';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import { checkAndAwardBadges } from '@/lib/badgeUtils';
-import { 
-  Zap, 
-  RotateCcw, 
-  CheckCircle, 
+import { useEffect, useRef, useState, useCallback } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Layout } from "@/components/layout/Layout";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { checkAndAwardBadges } from "@/lib/badgeUtils";
+import {
+  Zap,
+  RotateCcw,
+  CheckCircle,
   Info,
   Gauge,
-  TrendingUp
-} from 'lucide-react';
+  TrendingUp,
+} from "lucide-react";
 
 interface ExperimentData {
   id: string;
@@ -36,11 +42,11 @@ export default function OhmsLawExperiment() {
   const navigate = useNavigate();
   const { user, profile, updateProfile } = useAuth();
   const graphCanvasRef = useRef<HTMLCanvasElement>(null);
-  
+
   const [experiment, setExperiment] = useState<ExperimentData | null>(null);
   const [experimentRunId, setExperimentRunId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  
+
   // Experiment state
   const [voltage, setVoltage] = useState(5); // V (0-20)
   const [resistance, setResistance] = useState(100); // Ω (1-1000)
@@ -68,7 +74,7 @@ export default function OhmsLawExperiment() {
 
   useEffect(() => {
     if (experiment && user && experimentRunId) {
-      logEvent('experiment_started', { experiment_id: experiment.id });
+      logEvent("experiment_started", { experiment_id: experiment.id });
     }
   }, [experimentRunId]);
 
@@ -76,10 +82,12 @@ export default function OhmsLawExperiment() {
   const drawGraph = useCallback(() => {
     const canvas = graphCanvasRef.current;
     if (!canvas) {
-      console.warn('Canvas not found - graph will be drawn when canvas is ready');
+      console.warn(
+        "Canvas not found - graph will be drawn when canvas is ready"
+      );
       return;
     }
-    
+
     // Ensure canvas has valid dimensions
     if (canvas.width === 0 || canvas.height === 0) {
       // Try to set default dimensions if not set
@@ -87,108 +95,248 @@ export default function OhmsLawExperiment() {
       if (canvas.height === 0) canvas.height = 400;
     }
 
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (!ctx) {
-      console.error('Could not get 2d context from canvas');
+      console.error("Could not get 2d context from canvas");
       return;
     }
 
     const width = canvas.width;
     const height = canvas.height;
-    const padding = 40;
-    const graphWidth = width - padding * 2;
-    const graphHeight = height - padding * 2;
+    const padding = { top: 50, right: 50, bottom: 60, left: 70 };
+    const graphWidth = width - padding.left - padding.right;
+    const graphHeight = height - padding.top - padding.bottom;
 
-    // Clear canvas
+    // Helper function for rounded rectangle
+    const drawRoundedRect = (
+      x: number,
+      y: number,
+      w: number,
+      h: number,
+      r: number
+    ) => {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + w - r, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+      ctx.lineTo(x + w, y + h - r);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      ctx.lineTo(x + r, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.closePath();
+    };
+
+    // Clear canvas with smooth background
     ctx.clearRect(0, 0, width, height);
 
-    // Background
-    ctx.fillStyle = '#f8fafc';
+    // Create gradient background
+    const bgGradient = ctx.createLinearGradient(0, 0, width, height);
+    bgGradient.addColorStop(0, "#ffffff");
+    bgGradient.addColorStop(1, "#f8fafc");
+    ctx.fillStyle = bgGradient;
     ctx.fillRect(0, 0, width, height);
 
-    // Draw grid
-    ctx.strokeStyle = '#e2e8f0';
+    // Draw minor grid lines (lighter)
+    ctx.strokeStyle = "#f1f5f9";
+    ctx.lineWidth = 0.5;
+    for (let i = 0; i <= 20; i++) {
+      const x = padding.left + (i / 20) * graphWidth;
+      const y = padding.top + (i / 20) * graphHeight;
+
+      // Vertical minor grid
+      if (i % 2 !== 0) {
+        ctx.beginPath();
+        ctx.moveTo(x, padding.top);
+        ctx.lineTo(x, height - padding.bottom);
+        ctx.stroke();
+      }
+
+      // Horizontal minor grid
+      if (i % 2 !== 0) {
+        ctx.beginPath();
+        ctx.moveTo(padding.left, y);
+        ctx.lineTo(width - padding.right, y);
+        ctx.stroke();
+      }
+    }
+
+    // Draw major grid lines
+    ctx.strokeStyle = "#e2e8f0";
     ctx.lineWidth = 1;
     for (let i = 0; i <= 10; i++) {
-      const x = padding + (i / 10) * graphWidth;
-      const y = padding + (i / 10) * graphHeight;
-      
+      const x = padding.left + (i / 10) * graphWidth;
+      const y = padding.top + (i / 10) * graphHeight;
+
       // Vertical grid lines
       ctx.beginPath();
-      ctx.moveTo(x, padding);
-      ctx.lineTo(x, height - padding);
+      ctx.moveTo(x, padding.top);
+      ctx.lineTo(x, height - padding.bottom);
       ctx.stroke();
-      
+
       // Horizontal grid lines
       ctx.beginPath();
-      ctx.moveTo(padding, y);
-      ctx.lineTo(width - padding, y);
+      ctx.moveTo(padding.left, y);
+      ctx.lineTo(width - padding.right, y);
       ctx.stroke();
     }
 
-    // Draw axes
-    ctx.strokeStyle = '#1e293b';
-    ctx.lineWidth = 2;
-    
-    // X-axis (Voltage)
-    ctx.beginPath();
-    ctx.moveTo(padding, height - padding);
-    ctx.lineTo(width - padding, height - padding);
-    ctx.stroke();
-    
-    // Y-axis (Current)
-    ctx.beginPath();
-    ctx.moveTo(padding, padding);
-    ctx.lineTo(padding, height - padding);
-    ctx.stroke();
+    // Calculate max current for scaling
+    const maxCurrentAtMaxVoltage = resistance > 0 ? 20 / resistance : 0.2;
+    const maxCurrentForGraph = Math.max(0.2, maxCurrentAtMaxVoltage * 1.1);
 
-    // Draw axis labels
-    ctx.fillStyle = '#1e293b';
-    ctx.font = '12px Inter, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('Voltage (V)', width / 2, height - 10);
-    
+    // Draw axes with arrows
+    ctx.strokeStyle = "#334155";
+    ctx.lineWidth = 2.5;
+    ctx.fillStyle = "#334155";
+
+    // X-axis (Voltage) with arrow
+    ctx.beginPath();
+    ctx.moveTo(padding.left, height - padding.bottom);
+    ctx.lineTo(width - padding.right + 10, height - padding.bottom);
+    ctx.stroke();
+    // Arrow head
+    ctx.beginPath();
+    ctx.moveTo(width - padding.right + 10, height - padding.bottom);
+    ctx.lineTo(width - padding.right, height - padding.bottom - 5);
+    ctx.lineTo(width - padding.right, height - padding.bottom + 5);
+    ctx.closePath();
+    ctx.fill();
+
+    // Y-axis (Current) with arrow
+    ctx.beginPath();
+    ctx.moveTo(padding.left, height - padding.bottom);
+    ctx.lineTo(padding.left, padding.top - 10);
+    ctx.stroke();
+    // Arrow head
+    ctx.beginPath();
+    ctx.moveTo(padding.left, padding.top - 10);
+    ctx.lineTo(padding.left - 5, padding.top);
+    ctx.lineTo(padding.left + 5, padding.top);
+    ctx.closePath();
+    ctx.fill();
+
+    // Draw axis labels with better styling
+    ctx.fillStyle = "#1e293b";
+    ctx.font = "bold 14px Inter, system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    ctx.fillText("Voltage (V)", width / 2, height - padding.bottom + 25);
+
     ctx.save();
-    ctx.translate(15, height / 2);
+    ctx.translate(20, height / 2);
     ctx.rotate(-Math.PI / 2);
-    ctx.fillText('Current (A)', 0, 0);
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("Current (A)", 0, 0);
     ctx.restore();
 
     // Draw axis ticks and labels
-    ctx.textAlign = 'center';
+    ctx.font = "11px Inter, system-ui, sans-serif";
+    ctx.fillStyle = "#64748b";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+
+    // X-axis ticks and labels
     for (let i = 0; i <= 10; i++) {
-      const x = padding + (i / 10) * graphWidth;
+      const x = padding.left + (i / 10) * graphWidth;
       const voltageValue = (i / 10) * 20;
-      ctx.fillText(voltageValue.toFixed(0), x, height - padding + 20);
-    }
 
-    // Calculate max current for scaling (ensure graph shows meaningful range)
-    // Use the maximum possible current at 20V for this resistance, with a minimum of 0.2A
-    const maxCurrentAtMaxVoltage = resistance > 0 ? 20 / resistance : 0.2;
-    const maxCurrentForGraph = Math.max(0.2, maxCurrentAtMaxVoltage * 1.1); // Show up to 110% of max at 20V
-    
-    ctx.textAlign = 'right';
-    for (let i = 0; i <= 10; i++) {
-      const y = height - padding - (i / 10) * graphHeight;
-      const currentValue = (i / 10) * maxCurrentForGraph;
-      ctx.fillText(currentValue.toFixed(3), padding - 10, y + 4);
-    }
-
-    // Draw V-I line (Ohm's Law: I = V/R) - linear relationship
-    if (resistance > 0) {
-      ctx.strokeStyle = '#3b82f6';
-      ctx.lineWidth = 3;
+      // Tick mark
+      ctx.strokeStyle = "#334155";
+      ctx.lineWidth = 1.5;
       ctx.beginPath();
-      
+      ctx.moveTo(x, height - padding.bottom);
+      ctx.lineTo(x, height - padding.bottom + 5);
+      ctx.stroke();
+
+      // Label
+      ctx.fillText(voltageValue.toFixed(0), x, height - padding.bottom + 10);
+    }
+
+    // Y-axis ticks and labels
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
+    for (let i = 0; i <= 10; i++) {
+      const y = height - padding.bottom - (i / 10) * graphHeight;
+      const currentValue = (i / 10) * maxCurrentForGraph;
+
+      // Tick mark
+      ctx.strokeStyle = "#334155";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(padding.left, y);
+      ctx.lineTo(padding.left - 5, y);
+      ctx.stroke();
+
+      // Label
+      ctx.fillText(currentValue.toFixed(3), padding.left - 10, y);
+    }
+
+    // Draw V-I line with gradient fill
+    if (resistance > 0) {
+      // Create gradient for the line
+      const lineGradient = ctx.createLinearGradient(
+        padding.left,
+        height - padding.bottom,
+        width - padding.right,
+        padding.top
+      );
+      lineGradient.addColorStop(0, "#3b82f6");
+      lineGradient.addColorStop(0.5, "#60a5fa");
+      lineGradient.addColorStop(1, "#93c5fd");
+
+      // Draw filled area under the curve
+      const areaGradient = ctx.createLinearGradient(
+        padding.left,
+        height - padding.bottom,
+        padding.left,
+        padding.top
+      );
+      areaGradient.addColorStop(0, "rgba(59, 130, 246, 0.15)");
+      areaGradient.addColorStop(1, "rgba(59, 130, 246, 0.05)");
+
+      ctx.fillStyle = areaGradient;
+      ctx.beginPath();
+      ctx.moveTo(padding.left, height - padding.bottom);
+
+      for (let v = 0; v <= 20; v += 0.1) {
+        const i = v / resistance;
+        const x = padding.left + (v / 20) * graphWidth;
+        const y =
+          height - padding.bottom - (i / maxCurrentForGraph) * graphHeight;
+        const clampedY = Math.max(
+          padding.top,
+          Math.min(height - padding.bottom, y)
+        );
+        ctx.lineTo(x, clampedY);
+      }
+
+      ctx.lineTo(width - padding.right, height - padding.bottom);
+      ctx.closePath();
+      ctx.fill();
+
+      // Draw the line with gradient
+      ctx.strokeStyle = lineGradient;
+      ctx.lineWidth = 3.5;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.shadowColor = "rgba(59, 130, 246, 0.3)";
+      ctx.shadowBlur = 8;
+      ctx.beginPath();
+
       let firstPoint = true;
       for (let v = 0; v <= 20; v += 0.1) {
         const i = v / resistance;
-        const x = padding + (v / 20) * graphWidth;
-        const y = height - padding - (i / maxCurrentForGraph) * graphHeight;
-        
-        // Ensure y is within bounds
-        const clampedY = Math.max(padding, Math.min(height - padding, y));
-        
+        const x = padding.left + (v / 20) * graphWidth;
+        const y =
+          height - padding.bottom - (i / maxCurrentForGraph) * graphHeight;
+        const clampedY = Math.max(
+          padding.top,
+          Math.min(height - padding.bottom, y)
+        );
+
         if (firstPoint) {
           ctx.moveTo(x, clampedY);
           firstPoint = false;
@@ -197,38 +345,146 @@ export default function OhmsLawExperiment() {
         }
       }
       ctx.stroke();
-      
-      // Add line label
-      ctx.fillStyle = '#3b82f6';
-      ctx.font = '11px Inter, sans-serif';
-      ctx.textAlign = 'left';
-      const labelX = padding + (15 / 20) * graphWidth;
-      const labelY = height - padding - ((15 / resistance) / maxCurrentForGraph) * graphHeight;
-      ctx.fillText(`R = ${resistance}Ω`, labelX + 5, Math.max(padding + 15, labelY));
+      ctx.shadowBlur = 0;
+
+      // Add resistance label with background
+      const labelX = padding.left + (16 / 20) * graphWidth;
+      const labelY =
+        height -
+        padding.bottom -
+        (16 / resistance / maxCurrentForGraph) * graphHeight;
+      const clampedLabelY = Math.max(
+        padding.top + 20,
+        Math.min(height - padding.bottom - 20, labelY)
+      );
+
+      // Label background
+      ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
+      ctx.strokeStyle = "#3b82f6";
+      ctx.lineWidth = 1.5;
+      const labelText = `R = ${resistance} Ω`;
+      ctx.font = "bold 12px Inter, system-ui, sans-serif";
+      const textMetrics = ctx.measureText(labelText);
+      const labelPadding = 8;
+      const labelWidth = textMetrics.width + labelPadding * 2;
+      const labelHeight = 20;
+
+      drawRoundedRect(
+        labelX,
+        clampedLabelY - labelHeight / 2,
+        labelWidth,
+        labelHeight,
+        6
+      );
+      ctx.fill();
+      ctx.stroke();
+
+      // Label text
+      ctx.fillStyle = "#3b82f6";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.fillText(labelText, labelX + labelPadding, clampedLabelY);
     }
 
-    // Draw current data point (red dot showing current position)
-    const pointX = padding + (voltage / 20) * graphWidth;
-    const pointY = height - padding - (current / maxCurrentForGraph) * graphHeight;
-    
+    // Draw current data point with enhanced styling
+    const pointX = padding.left + (voltage / 20) * graphWidth;
+    const pointY =
+      height - padding.bottom - (current / maxCurrentForGraph) * graphHeight;
+
     // Only draw if point is within graph bounds
-    if (pointX >= padding && pointX <= width - padding && pointY >= padding && pointY <= height - padding) {
-      // Draw point
-      ctx.fillStyle = '#ef4444';
+    if (
+      pointX >= padding.left &&
+      pointX <= width - padding.right &&
+      pointY >= padding.top &&
+      pointY <= height - padding.bottom
+    ) {
+      // Draw connecting lines to axes
+      ctx.strokeStyle = "rgba(239, 68, 68, 0.3)";
+      ctx.lineWidth = 1;
+      ctx.setLineDash([5, 5]);
+
+      // Vertical line to x-axis
       ctx.beginPath();
-      ctx.arc(pointX, pointY, 6, 0, Math.PI * 2);
-      ctx.fill();
-      
-      // Draw point outline
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 2;
+      ctx.moveTo(pointX, pointY);
+      ctx.lineTo(pointX, height - padding.bottom);
       ctx.stroke();
-      
-      // Draw value label
-      ctx.fillStyle = '#1e293b';
-      ctx.font = '10px Inter, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(`V=${voltage.toFixed(1)}, I=${current.toFixed(3)}`, pointX, pointY - 10);
+
+      // Horizontal line to y-axis
+      ctx.beginPath();
+      ctx.moveTo(pointX, pointY);
+      ctx.lineTo(padding.left, pointY);
+      ctx.stroke();
+
+      ctx.setLineDash([]);
+
+      // Draw point with glow effect
+      const pointGradient = ctx.createRadialGradient(
+        pointX,
+        pointY,
+        0,
+        pointX,
+        pointY,
+        12
+      );
+      pointGradient.addColorStop(0, "#ef4444");
+      pointGradient.addColorStop(0.7, "#f87171");
+      pointGradient.addColorStop(1, "rgba(239, 68, 68, 0)");
+
+      ctx.fillStyle = pointGradient;
+      ctx.beginPath();
+      ctx.arc(pointX, pointY, 12, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Draw point
+      ctx.fillStyle = "#ef4444";
+      ctx.beginPath();
+      ctx.arc(pointX, pointY, 7, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Draw point outline
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+
+      // Draw inner highlight
+      ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+      ctx.beginPath();
+      ctx.arc(pointX - 2, pointY - 2, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Draw value label with background
+      ctx.font = "bold 11px Inter, system-ui, sans-serif";
+      const valueText = `V = ${voltage.toFixed(1)} V, I = ${current.toFixed(
+        3
+      )} A`;
+      const valueMetrics = ctx.measureText(valueText);
+      const valuePadding = 6;
+      const valueWidth = valueMetrics.width + valuePadding * 2;
+      const valueHeight = 22;
+      const valueX = pointX;
+      const valueY = pointY - 35;
+
+      // Label background with shadow
+      ctx.shadowColor = "rgba(0, 0, 0, 0.1)";
+      ctx.shadowBlur = 4;
+      ctx.shadowOffsetY = 2;
+      ctx.fillStyle = "#1e293b";
+      drawRoundedRect(
+        valueX - valueWidth / 2,
+        valueY - valueHeight / 2,
+        valueWidth,
+        valueHeight,
+        8
+      );
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetY = 0;
+
+      // Label text
+      ctx.fillStyle = "#ffffff";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(valueText, valueX, valueY);
     }
   }, [voltage, resistance, current]);
 
@@ -241,20 +497,21 @@ export default function OhmsLawExperiment() {
   // Track user interactions (only count actual changes, not initial render)
   useEffect(() => {
     if (experimentRunId && !isCompleted) {
-      const hasChanged = prevValuesRef.current.voltage !== voltage || 
-                        prevValuesRef.current.resistance !== resistance;
-      
+      const hasChanged =
+        prevValuesRef.current.voltage !== voltage ||
+        prevValuesRef.current.resistance !== resistance;
+
       if (hasChanged) {
-        setInteractionCount(prev => prev + 1);
+        setInteractionCount((prev) => prev + 1);
         prevValuesRef.current = { voltage, resistance };
-        
+
         // Log parameter change (debounced to avoid too many events)
         const timeoutId = setTimeout(() => {
-          logEvent('parameter_changed', { 
-            param: 'voltage_or_resistance',
+          logEvent("parameter_changed", {
+            param: "voltage_or_resistance",
             voltage,
             resistance,
-            current: voltage / resistance
+            current: voltage / resistance,
           });
         }, 500);
 
@@ -266,7 +523,7 @@ export default function OhmsLawExperiment() {
   // Initialize and resize canvas
   useEffect(() => {
     if (loading) return; // Wait for component to finish loading
-    
+
     const canvas = graphCanvasRef.current;
     if (!canvas) {
       // Retry after a short delay if canvas isn't ready
@@ -274,7 +531,7 @@ export default function OhmsLawExperiment() {
         const retryCanvas = graphCanvasRef.current;
         if (retryCanvas) {
           // Trigger re-initialization
-          const event = new Event('resize');
+          const event = new Event("resize");
           window.dispatchEvent(event);
         }
       }, 200);
@@ -291,17 +548,17 @@ export default function OhmsLawExperiment() {
         setTimeout(resizeCanvas, 50);
         return;
       }
-      
+
       const rect = container.getBoundingClientRect();
       if (rect.width === 0 || rect.height === 0) {
         // Container not sized yet, retry
         setTimeout(resizeCanvas, 50);
         return;
       }
-      
+
       const maxWidth = Math.min(600, Math.max(300, rect.width - 32)); // Account for padding, min 300px
       const aspectRatio = 400 / 600;
-      
+
       canvas.width = maxWidth;
       canvas.height = maxWidth * aspectRatio;
       drawGraph();
@@ -309,13 +566,13 @@ export default function OhmsLawExperiment() {
 
     // Initial resize with a delay to ensure container is rendered
     const timeoutId = setTimeout(resizeCanvas, 150);
-    
+
     // Resize on window resize
-    window.addEventListener('resize', resizeCanvas);
-    
+    window.addEventListener("resize", resizeCanvas);
+
     return () => {
       clearTimeout(timeoutId);
-      window.removeEventListener('resize', resizeCanvas);
+      window.removeEventListener("resize", resizeCanvas);
     };
   }, [drawGraph, loading]);
 
@@ -331,16 +588,16 @@ export default function OhmsLawExperiment() {
 
   const fetchExperiment = async () => {
     const { data } = await supabase
-      .from('experiments')
-      .select('*')
-      .eq('id', id)
+      .from("experiments")
+      .select("*")
+      .eq("id", id)
       .maybeSingle();
 
     if (data) {
       setExperiment(data as unknown as ExperimentData);
     } else {
-      toast.error('Experiment not found');
-      navigate('/experiments');
+      toast.error("Experiment not found");
+      navigate("/experiments");
     }
     setLoading(false);
   };
@@ -350,11 +607,11 @@ export default function OhmsLawExperiment() {
 
     try {
       const { data, error } = await supabase
-        .from('experiment_runs')
+        .from("experiment_runs")
         .insert({
           user_id: user.id,
           experiment_id: experiment.id,
-          status: 'in_progress',
+          status: "in_progress",
         })
         .select()
         .single();
@@ -362,22 +619,24 @@ export default function OhmsLawExperiment() {
       if (data && !error) {
         setExperimentRunId(data.id);
       } else if (error) {
-        console.error('Error starting experiment run:', error);
+        console.error("Error starting experiment run:", error);
       }
     } catch (err) {
-      console.error('Error starting experiment run:', err);
+      console.error("Error starting experiment run:", err);
     }
   };
 
   const logEvent = async (eventType: string, eventData: any) => {
     if (!user || !experimentRunId) return;
-    
-    await supabase.from('event_logs').insert([{
-      user_id: user.id,
-      experiment_run_id: experimentRunId,
-      event_type: eventType,
-      event_data: eventData,
-    }]);
+
+    await supabase.from("event_logs").insert([
+      {
+        user_id: user.id,
+        experiment_run_id: experimentRunId,
+        event_type: eventType,
+        event_data: eventData,
+      },
+    ]);
   };
 
   const handleVoltageChange = (value: number[]) => {
@@ -400,7 +659,9 @@ export default function OhmsLawExperiment() {
     setVoltage(clamped);
   };
 
-  const handleResistanceInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleResistanceInputChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const value = parseFloat(e.target.value) || 1;
     const clamped = Math.max(1, Math.min(1000, value));
     setResistance(clamped);
@@ -412,8 +673,11 @@ export default function OhmsLawExperiment() {
     setInteractionCount(0);
     setVoltage(DEFAULT_VOLTAGE);
     setResistance(DEFAULT_RESISTANCE);
-    prevValuesRef.current = { voltage: DEFAULT_VOLTAGE, resistance: DEFAULT_RESISTANCE };
-    
+    prevValuesRef.current = {
+      voltage: DEFAULT_VOLTAGE,
+      resistance: DEFAULT_RESISTANCE,
+    };
+
     // Start a new experiment run
     if (experiment && user) {
       await startExperimentRun();
@@ -434,29 +698,30 @@ export default function OhmsLawExperiment() {
     setIsCompleted(true);
 
     // Save to ohmslaw_runs table
-    const { error: ohmsError } = await supabase
-      .from('ohmslaw_runs')
-      .insert({
-        user_id: user.id,
-        voltage: voltage,
-        resistance: resistance,
-        current: current,
-      });
+    const { error: ohmsError } = await supabase.from("ohmslaw_runs").insert({
+      user_id: user.id,
+      voltage: voltage,
+      resistance: resistance,
+      current: current,
+    });
 
     if (ohmsError) {
-      console.error('Error saving Ohm Law result:', ohmsError);
-      toast.error('Failed to save result');
+      console.error("Error saving Ohm Law result:", ohmsError);
+      toast.error("Failed to save result");
       return;
     }
 
     // Calculate XP - ensure minimum XP is awarded
-    const baseXP = Math.max(10, Math.round((score / 100) * experiment.xp_reward)); // Minimum 10 XP
+    const baseXP = Math.max(
+      10,
+      Math.round((score / 100) * experiment.xp_reward)
+    ); // Minimum 10 XP
     const xpEarned = baseXP;
-    
+
     const { error: updateError } = await supabase
-      .from('experiment_runs')
+      .from("experiment_runs")
       .update({
-        status: 'completed',
+        status: "completed",
         completed_at: new Date().toISOString(),
         score: score,
         accuracy: score,
@@ -468,11 +733,11 @@ export default function OhmsLawExperiment() {
           interaction_count: interactionCount,
         },
       })
-      .eq('id', experimentRunId);
+      .eq("id", experimentRunId);
 
     if (updateError) {
-      console.error('Error updating experiment run:', updateError);
-      toast.error('Failed to update experiment run');
+      console.error("Error updating experiment run:", updateError);
+      toast.error("Failed to update experiment run");
       return;
     }
 
@@ -484,9 +749,9 @@ export default function OhmsLawExperiment() {
         xp_points: newXP,
         level: newLevel,
       });
-      
+
       if (profileError) {
-        console.error('Error updating profile:', profileError);
+        console.error("Error updating profile:", profileError);
       }
     }
 
@@ -495,19 +760,19 @@ export default function OhmsLawExperiment() {
       const completedRun = {
         id: experimentRunId,
         experiment_id: experiment.id,
-        status: 'completed',
+        status: "completed",
         score: score,
         accuracy: score,
         experiments: {
-          name: experiment.name || '',
-          subject: 'Physics',
+          name: experiment.name || "",
+          subject: "Physics",
         },
       };
-      
+
       await checkAndAwardBadges(user.id, profile?.xp_points || 0, completedRun);
     }
 
-    logEvent('experiment_completed', {
+    logEvent("experiment_completed", {
       score,
       voltage,
       resistance,
@@ -539,10 +804,11 @@ export default function OhmsLawExperiment() {
           <div>
             <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
               <Zap className="h-8 w-8 text-primary" />
-              {experiment?.name || 'Ohm\'s Law Experiment'}
+              {experiment?.name || "Ohm's Law Experiment"}
             </h1>
             <p className="text-muted-foreground mt-1">
-              {experiment?.description || 'Explore the relationship between voltage, current, and resistance'}
+              {experiment?.description ||
+                "Explore the relationship between voltage, current, and resistance"}
             </p>
           </div>
           <Badge className="bg-gold/10 text-gold border-gold/20">
@@ -554,7 +820,11 @@ export default function OhmsLawExperiment() {
           {/* Main Experiment Area */}
           <div className="lg:col-span-2 space-y-6">
             {/* Controls Card */}
-            <Card variant="elevated" className="animate-fade-in" style={{ animationDelay: '0.1s' }}>
+            <Card
+              variant="elevated"
+              className="animate-fade-in"
+              style={{ animationDelay: "0.1s" }}
+            >
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Gauge className="h-5 w-5 text-primary" />
@@ -568,10 +838,15 @@ export default function OhmsLawExperiment() {
                 {/* Voltage Control */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="voltage" className="text-base font-semibold">
+                    <Label
+                      htmlFor="voltage"
+                      className="text-base font-semibold"
+                    >
                       Voltage (V)
                     </Label>
-                    <span className="text-sm text-muted-foreground">Range: 0-20 V</span>
+                    <span className="text-sm text-muted-foreground">
+                      Range: 0-20 V
+                    </span>
                   </div>
                   <div className="flex items-center gap-4">
                     <Slider
@@ -603,10 +878,15 @@ export default function OhmsLawExperiment() {
                 {/* Resistance Control */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="resistance" className="text-base font-semibold">
+                    <Label
+                      htmlFor="resistance"
+                      className="text-base font-semibold"
+                    >
                       Resistance (Ω)
                     </Label>
-                    <span className="text-sm text-muted-foreground">Range: 1-1000 Ω</span>
+                    <span className="text-sm text-muted-foreground">
+                      Range: 1-1000 Ω
+                    </span>
                   </div>
                   <div className="flex items-center gap-4">
                     <Slider
@@ -638,7 +918,9 @@ export default function OhmsLawExperiment() {
                 {/* Current Display */}
                 <div className="p-4 rounded-lg bg-primary/10 border-2 border-primary/20">
                   <div className="flex items-center justify-between">
-                    <Label className="text-base font-semibold">Current (A)</Label>
+                    <Label className="text-base font-semibold">
+                      Current (A)
+                    </Label>
                     <div className="flex items-baseline gap-2">
                       <span className="text-2xl font-bold text-primary">
                         {current.toFixed(3)}
@@ -647,7 +929,8 @@ export default function OhmsLawExperiment() {
                     </div>
                   </div>
                   <p className="text-xs text-muted-foreground mt-2">
-                    Calculated using: I = V / R = {voltage.toFixed(1)} / {resistance} = {current.toFixed(3)} A
+                    Calculated using: I = V / R = {voltage.toFixed(1)} /{" "}
+                    {resistance} = {current.toFixed(3)} A
                   </p>
                 </div>
 
@@ -675,7 +958,10 @@ export default function OhmsLawExperiment() {
             </Card>
 
             {/* Graph Card */}
-            <Card className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
+            <Card
+              className="animate-fade-in"
+              style={{ animationDelay: "0.2s" }}
+            >
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <TrendingUp className="h-5 w-5 text-primary" />
@@ -690,7 +976,11 @@ export default function OhmsLawExperiment() {
                   <canvas
                     ref={graphCanvasRef}
                     className="w-full h-auto max-w-full mx-auto block"
-                    style={{ maxHeight: '400px', aspectRatio: '3/2', minHeight: '300px' }}
+                    style={{
+                      maxHeight: "400px",
+                      aspectRatio: "3/2",
+                      minHeight: "300px",
+                    }}
                     width={600}
                     height={400}
                     aria-label="Voltage-Current graph"
@@ -703,7 +993,10 @@ export default function OhmsLawExperiment() {
           {/* Sidebar */}
           <div className="space-y-4">
             {/* Instructions */}
-            <Card className="animate-fade-in" style={{ animationDelay: '0.3s' }}>
+            <Card
+              className="animate-fade-in"
+              style={{ animationDelay: "0.3s" }}
+            >
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Info className="h-5 w-5 text-accent" />
@@ -712,14 +1005,16 @@ export default function OhmsLawExperiment() {
               </CardHeader>
               <CardContent>
                 <ol className="space-y-2 text-sm">
-                  {(experiment?.instructions?.steps || [
-                    'Adjust the voltage slider to change voltage (0-20 V)',
-                    'Adjust the resistance slider to change resistance (1-1000 Ω)',
-                    'Observe how current changes according to I = V / R',
-                    'Watch the graph update in real-time',
-                    'Experiment with different values to understand the relationship',
-                    'Click "Submit Result" when finished'
-                  ]).map((step, index) => (
+                  {(
+                    experiment?.instructions?.steps || [
+                      "Adjust the voltage slider to change voltage (0-20 V)",
+                      "Adjust the resistance slider to change resistance (1-1000 Ω)",
+                      "Observe how current changes according to I = V / R",
+                      "Watch the graph update in real-time",
+                      "Experiment with different values to understand the relationship",
+                      'Click "Submit Result" when finished',
+                    ]
+                  ).map((step, index) => (
                     <li key={index} className="flex gap-2">
                       <span className="flex-shrink-0 h-5 w-5 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center">
                         {index + 1}
@@ -732,7 +1027,11 @@ export default function OhmsLawExperiment() {
             </Card>
 
             {/* Formula Card */}
-            <Card variant="gradient" className="animate-fade-in" style={{ animationDelay: '0.4s' }}>
+            <Card
+              variant="gradient"
+              className="animate-fade-in"
+              style={{ animationDelay: "0.4s" }}
+            >
               <CardHeader>
                 <CardTitle>Ohm's Law</CardTitle>
               </CardHeader>
@@ -759,14 +1058,33 @@ export default function OhmsLawExperiment() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-center">
-                    <div className="text-4xl font-bold text-gold mb-2">{score}%</div>
+                    <div className="text-4xl font-bold text-gold mb-2">
+                      {score}%
+                    </div>
                     <p className="text-sm text-muted-foreground mb-4">
-                      {score >= 90 ? 'Excellent work!' : score >= 70 ? 'Good job!' : 'Keep practicing!'}
+                      {score >= 90
+                        ? "Excellent work!"
+                        : score >= 70
+                        ? "Good job!"
+                        : "Keep practicing!"}
                     </p>
                     <div className="text-sm space-y-1">
-                      <p>Final Voltage: <span className="font-medium">{voltage.toFixed(1)} V</span></p>
-                      <p>Final Resistance: <span className="font-medium">{resistance} Ω</span></p>
-                      <p>Calculated Current: <span className="font-medium">{current.toFixed(3)} A</span></p>
+                      <p>
+                        Final Voltage:{" "}
+                        <span className="font-medium">
+                          {voltage.toFixed(1)} V
+                        </span>
+                      </p>
+                      <p>
+                        Final Resistance:{" "}
+                        <span className="font-medium">{resistance} Ω</span>
+                      </p>
+                      <p>
+                        Calculated Current:{" "}
+                        <span className="font-medium">
+                          {current.toFixed(3)} A
+                        </span>
+                      </p>
                     </div>
                   </div>
                 </CardContent>
@@ -778,4 +1096,3 @@ export default function OhmsLawExperiment() {
     </Layout>
   );
 }
-
