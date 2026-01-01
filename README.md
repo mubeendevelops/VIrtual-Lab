@@ -16,7 +16,14 @@ cd <YOUR_PROJECT_NAME>
 # Step 3: Install the necessary dependencies.
 npm i
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Step 4: Add enviornment variables
+VITE_SUPABASE_URL=
+VITE_SUPABASE_PUBLISHABLE_KEY=
+inside .env.local file in project directory
+
+# Step 5: Run all migrations in supabase
+
+# Step 6: Start the development server with auto-reloading and an instant preview.
 npm run dev
 ```
 
