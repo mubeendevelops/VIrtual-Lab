@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,21 +10,38 @@ import { toast } from 'sonner';
 export default function VerifyEmail() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [isVerified, setIsVerified] = useState(false);
   const [checking, setChecking] = useState(true);
   const [resending, setResending] = useState(false);
 
   useEffect(() => {
+    // Check if user came from email verification link
+    const token = searchParams.get('token');
+    const type = searchParams.get('type');
+    
+    if (token && type === 'signup') {
+      // User clicked email verification link - Supabase handles verification automatically
+      // Redirect to login after a moment
+      setTimeout(() => {
+        navigate('/auth?verified=true');
+      }, 2000);
+    }
+
     // If no user, redirect to auth
     if (!authLoading && !user) {
       navigate('/auth?mode=signup');
       return;
     }
 
-    // If user is already verified, redirect to dashboard
+    // If user is already verified, redirect to login
     if (user?.email_confirmed_at) {
       setIsVerified(true);
       setChecking(false);
+      // Redirect to login page after verification
+      setTimeout(() => {
+        navigate('/auth?verified=true');
+      }, 2000);
     } else {
       // Check verification status periodically
       const checkVerification = async () => {
@@ -32,6 +49,10 @@ export default function VerifyEmail() {
         if (session?.user?.email_confirmed_at) {
           setIsVerified(true);
           setChecking(false);
+          // Redirect to login after verification
+          setTimeout(() => {
+            navigate('/auth?verified=true');
+          }, 2000);
         } else {
           setChecking(false);
         }
@@ -42,7 +63,7 @@ export default function VerifyEmail() {
 
       return () => clearInterval(interval);
     }
-  }, [user, authLoading, navigate]);
+  }, [user, authLoading, navigate, searchParams]);
 
   const handleResendEmail = async () => {
     if (!user?.email) return;
@@ -66,8 +87,8 @@ export default function VerifyEmail() {
     }
   };
 
-  const handleGoToDashboard = () => {
-    navigate('/dashboard');
+  const handleGoToLogin = () => {
+    navigate('/auth?verified=true');
   };
 
   if (authLoading || checking) {
@@ -111,7 +132,7 @@ export default function VerifyEmail() {
           </CardTitle>
           <CardDescription>
             {isVerified
-              ? 'Your email has been successfully verified. You can now access your dashboard.'
+              ? 'Your email has been successfully verified. You can now sign in to your account.'
               : `We've sent a verification email to ${user?.email || 'your email address'}. Please check your inbox and click the verification link.`}
           </CardDescription>
         </CardHeader>
@@ -161,9 +182,9 @@ export default function VerifyEmail() {
               variant="hero"
               size="lg"
               className="w-full gap-2"
-              onClick={handleGoToDashboard}
+              onClick={handleGoToLogin}
             >
-              Go to Dashboard
+              Go to Login
               <ArrowRight className="h-4 w-4" />
             </Button>
           )}

@@ -22,6 +22,7 @@ const signupSchema = loginSchema.extend({
 export default function Auth() {
   const [searchParams] = useSearchParams();
   const [isSignUp, setIsSignUp] = useState(searchParams.get('mode') === 'signup');
+  const isVerified = searchParams.get('verified') === 'true';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
@@ -37,6 +38,13 @@ export default function Auth() {
       navigate('/dashboard');
     }
   }, [user, navigate]);
+
+  useEffect(() => {
+    if (isVerified) {
+      toast.success('Email verified successfully! Please sign in.');
+      setIsSignUp(false); // Switch to login mode
+    }
+  }, [isVerified]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

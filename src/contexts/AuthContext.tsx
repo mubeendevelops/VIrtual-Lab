@@ -98,7 +98,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signUp = async (email: string, password: string, fullName: string, role: UserRole = 'student') => {
-    const redirectUrl = `${window.location.origin}/`;
+    // Redirect to auth page after email verification
+    const redirectUrl = `${window.location.origin}/auth?verified=true`;
     
     const { error } = await supabase.auth.signUp({
       email,
